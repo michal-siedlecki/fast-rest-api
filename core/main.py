@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from core.config import settings
-from core import routes
-from core.models import models
+from core import models, routes
 from .database import engine
 
 models.BaseModel.metadata.create_all(bind=engine)

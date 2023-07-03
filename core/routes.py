@@ -1,14 +1,13 @@
 import uuid
 import requests
+
 from typing import List
 from fastapi import APIRouter, Body, Header, Depends, HTTPException
 from starlette import status
 from sqlalchemy.orm import Session
+
 from core.config import settings
-from core.models import models, schemas
-
-from core import crud, utils, database
-
+from core import crud, utils, database, schemas, models
 
 router = APIRouter(tags=["dates"], responses={404: {"description": "Not found"}})
 
@@ -72,5 +71,4 @@ def delete_date(
     status_code=status.HTTP_200_OK,
 )
 def get_popular(db: Session = Depends(get_db)):
-    rs = crud.get_popular(db)
-    return list(rs)
+    return list(crud.get_popular(db))

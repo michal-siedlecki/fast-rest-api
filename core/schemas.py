@@ -23,9 +23,11 @@ class DateFactSchema(BaseModel):
 
 
 class MonthRankSchema(BaseModel):
-    id: int
-    month: str
-    days_checked: int
+    month: int = Field(None, title="The number of the month")
+    days_checked: int = Field(None, title="Days checked for the month")
+
+    class Config:
+        orm_mode = True
 
     @validator("month")
     def must_be_month_name(cls, v):
