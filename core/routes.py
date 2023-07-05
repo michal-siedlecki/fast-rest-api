@@ -1,5 +1,4 @@
 import uuid
-import requests
 
 from typing import List
 from fastapi import APIRouter, Body, Header, Depends, HTTPException
@@ -7,7 +6,7 @@ from starlette import status
 from sqlalchemy.orm import Session
 
 from core.config import settings
-from core import crud, utils, database, schemas, models
+from core import crud, utils, database, schemas
 
 router = APIRouter(tags=["dates"], responses={404: {"description": "Not found"}})
 
@@ -43,12 +42,7 @@ def post_date(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Bad Request"
         )
-    response = requests.get(f"http://numbersapi.com/{month}/{day}/date?format=json")
-    date_fact = models.DateFactModel(
-        id=uuid.uuid4(), day=day, month=month, fact=response.content.decode("utf-8")
-    )
-    db.add(date_fact)
-    db.commit()
+    date_fact = crud.create_date(month, day, db)
     return date_fact
 
 

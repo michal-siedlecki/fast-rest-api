@@ -1,3 +1,9 @@
-def is_valid_day_month(day, month):
-    valid_month_days = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-    return day <= valid_month_days[month - 1]
+from datetime import datetime
+
+
+def is_valid_day_month(day: int, month: int) -> bool:
+    try:
+        datetime(year=2, month=month, day=day)
+    except Exception:
+        return False
+    return True
