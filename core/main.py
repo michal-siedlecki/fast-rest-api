@@ -19,7 +19,7 @@ You can **read dates facts**, but first you need to **post** a day and a month t
 You can find also the post **popular months** among dates that have been posted.
 There is also way to **delete** date.
 
-Source code is available [here](https://github.com/michal-siedlecki/fast_dates_api)
+Source code is available [here](https://github.com/michal-siedlecki/fast-dates-api)
 
 """
 
@@ -36,7 +36,7 @@ app = FastAPI(
     },
     license_info={
         "name": "MIT",
-        "url": "https://github.com/michal-siedlecki/fast_rest_api/blob/main/LICENCE",
+        "url": "https://github.com/michal-siedlecki/fast-rest-api/blob/main/LICENCE",
     },
 )
 
