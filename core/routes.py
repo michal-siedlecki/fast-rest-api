@@ -1,6 +1,6 @@
 import uuid
 
-from typing import List, Optional
+from typing import List
 from fastapi import APIRouter, Body, Header, Depends, HTTPException
 from starlette import status
 from sqlalchemy.orm import Session
@@ -42,10 +42,13 @@ def post_date(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Bad Request"
         )
-    new_date = crud.create_date(month, day, db)
-    if not new_date:
-        return status.HTTP_404_NOT_FOUND
-    return new_date
+    try:
+        new_date = crud.create_date(month, day, db)
+        return new_date
+    except crud.ApiResponseException as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"Details : {e}"
+        )
 
 
 @router.delete("/dates/{date_id}", status_code=status.HTTP_204_NO_CONTENT)

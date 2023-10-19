@@ -1,44 +1,60 @@
 import uuid
 import requests
 from sqlalchemy.orm import Session
-from typing import Optional
 
 from core import models
 from sqlalchemy import func
 
+from requests.exceptions import ConnectionError
 
-def get_dates(db: Session):
+from typing import Optional
+
+
+class ApiResponseException(Exception):
+    """The API did not return valid response code"""
+
+    pass
+
+
+def get_dates(db: Session) -> list:
+    """Fetches models from database
+    :param db:
+    :return: list of the DatesFacts database models
+    """
     return db.query(models.DateFactModel).all()
 
 
-def try_get_response(url):
-    accepted_status_codes = [200, 301]
-    response = requests.get(url)
-    if response.status_code in accepted_status_codes:
-        return response
-
-    retries = 3
-    while retries:
-        response = requests.get(url)
-        if response.status_code in accepted_status_codes:
-            return response
-        retries -= 1
-
-
-def create_date(month, day, db):
+def create_date(month, day, db) -> Optional[models.DateFactModel]:
+    """Create DateFact entry in database based on response from the external api.
+    :param day: a day number
+    :param month: a month number
+    :param db: database context
+    :return: DateFact model
+    """
+    valid_status_codes = [200, 301]
     url = f"http://numbersapi.com/{month}/{day}/date?format=json"
-    response = try_get_response(url)
-    if response:
-        date_fact = models.DateFactModel(
-            id=uuid.uuid4(), day=day, month=month, fact=response.content.decode("utf-8")
+    try:
+        response = requests.get(url)
+    except ConnectionError as e:
+        raise ApiResponseException(e)
+    if response.status_code not in valid_status_codes:
+        raise ApiResponseException(
+            f"The API did not return valid response code {response.status_code}, "
+            f'details {response.content.decode("utf-8")}'
         )
+    date_fact = models.DateFactModel(
+        id=uuid.uuid4(), day=day, month=month, fact=response.content.decode("utf-8")
+    )
+    db.add(date_fact)
+    db.commit()
+    return date_fact
 
-        db.add(date_fact)
-        db.commit()
-        return date_fact
 
-
-def get_popular(db: Session):
+def get_popular(db: Session) -> list:
+    """Fetch DatesFacts models from the database and group them by month
+    :param db: database context
+    :return: list of DateFact database models
+    """
     result = (
         db.query(
             func.count(models.DateFactModel.id).label("days_checked"),
@@ -51,6 +67,11 @@ def get_popular(db: Session):
 
 
 def delete_date(date_id: uuid.UUID, db: Session):
+    """Delete DateFact entry from the database
+    :param date_id: a date id
+    :param db: database context
+    :return: True if deleted False if not
+    """
     date = (
         db.query(models.DateFactModel)
         .filter(models.DateFactModel.id == date_id)
